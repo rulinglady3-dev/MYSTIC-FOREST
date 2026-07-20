@@ -1,161 +1,267 @@
-const canvas = document.querySelector("#space");
+// CANVAS
+
+const canvas = document.querySelector("#forest");
+
+
+
+// SAHNE
 
 const scene = new THREE.Scene();
 
-const camera = new THREE.PerspectiveCamera(
-    75,
-    window.innerWidth / window.innerHeight,
-    0.1,
-    2000
+
+// SİS
+
+scene.fog = new THREE.FogExp2(
+    0x101522,
+    0.03
 );
+
+
+
+
+// KAMERA
+
+const camera = new THREE.PerspectiveCamera(
+
+    75,
+
+    window.innerWidth / window.innerHeight,
+
+    0.1,
+
+    1000
+
+);
+
+
+camera.position.set(
+    0,
+    3,
+    8
+);
+
+
+
+// RENDER
 
 const renderer = new THREE.WebGLRenderer({
-    canvas: canvas,
+
+    canvas:canvas,
     antialias:true
+
 });
+
 
 renderer.setSize(
+
     window.innerWidth,
     window.innerHeight
+
 );
 
 
-camera.position.z = 5;
 
 
-// YILDIZLAR
 
-const starGeometry = new THREE.BufferGeometry();
+// IŞIK
 
-const starCount = 6000;
+const moonLight = new THREE.DirectionalLight(
 
-const positions = [];
+    0xbfd8ff,
 
+    1.5
 
-for(let i=0;i<starCount;i++){
-
-    positions.push(
-        (Math.random()-0.5)*2000,
-        (Math.random()-0.5)*2000,
-        Math.random()*-2000
-    );
-
-}
-
-
-starGeometry.setAttribute(
-    "position",
-    new THREE.Float32BufferAttribute(
-        positions,
-        3
-    )
 );
 
 
-const starMaterial = new THREE.PointsMaterial({
+moonLight.position.set(
 
-    color:0xffffff,
-    size:2,
-    transparent:true,
-    opacity:.9
+    -10,
+    20,
+    5
+
+);
+
+
+scene.add(moonLight);
+
+
+
+const ambient = new THREE.AmbientLight(
+
+    0x334455,
+
+    0.8
+
+);
+
+
+scene.add(ambient);
+
+
+
+
+
+// ZEMİN
+
+const groundGeometry =
+new THREE.PlaneGeometry(
+
+    200,
+    200
+
+);
+
+
+const groundMaterial =
+new THREE.MeshStandardMaterial({
+
+    color:0x101c12
 
 });
 
 
-const stars = new THREE.Points(
-    starGeometry,
-    starMaterial
+const ground =
+new THREE.Mesh(
+
+    groundGeometry,
+    groundMaterial
+
 );
 
 
-scene.add(stars);
-
-// NEBULA EFEKTİ
-
-const nebulaGeometry = new THREE.BufferGeometry();
-
-const nebulaPositions = [];
-
-for(let i = 0; i < 1500; i++){
-
-    const radius = Math.random() * 700;
-
-    const angle = Math.random() * Math.PI * 2;
+ground.rotation.x =
+-Math.PI/2;
 
 
-    nebulaPositions.push(
-        Math.cos(angle) * radius,
-        (Math.random()-0.5) * 300,
-        Math.sin(angle) * radius - 800
+scene.add(ground);
+
+
+
+
+
+
+// AĞAÇ FONKSİYONU
+
+
+function createTree(x,z){
+
+
+    const trunk =
+    new THREE.Mesh(
+
+        new THREE.CylinderGeometry(
+            0.3,
+            0.5,
+            5
+        ),
+
+        new THREE.MeshStandardMaterial({
+
+            color:0x3b2415
+
+        })
+
     );
+
+
+    trunk.position.set(
+
+        x,
+        2.5,
+        z
+
+    );
+
+
+    scene.add(trunk);
+
+
+
+
+    const leaves =
+    new THREE.Mesh(
+
+        new THREE.SphereGeometry(
+            2.5,
+            16,
+            16
+        ),
+
+        new THREE.MeshStandardMaterial({
+
+            color:0x123d1c
+
+        })
+
+    );
+
+
+    leaves.position.set(
+
+        x,
+        5.5,
+        z
+
+    );
+
+
+    scene.add(leaves);
+
 
 }
 
 
-nebulaGeometry.setAttribute(
-    "position",
-    new THREE.Float32BufferAttribute(
-        nebulaPositions,
-        3
-    )
-);
+
+// AĞAÇLAR
 
 
-const nebulaMaterial = new THREE.PointsMaterial({
+createTree(-8,-15);
 
-    color:0x9b5cff,
+createTree(8,-20);
 
-    size:8,
+createTree(-15,-35);
 
-    transparent:true,
-
-    opacity:0.12,
-
-    blending:THREE.AdditiveBlending
-
-});
+createTree(15,-40);
 
 
-const nebula = new THREE.Points(
-    nebulaGeometry,
-    nebulaMaterial
-);
 
 
-scene.add(nebula);
 
 
 
 // ANİMASYON
 
+
 function animate(){
 
-    // SİNEMATİK UÇUŞ
 
-let time = Date.now()*0.0002;
-
-    galaxy.rotation.y += 0.0008;
-    nebula.rotation.y += 0.0002;
-
-
-camera.position.z -= 0.05;
-
-
-camera.position.x =
-Math.sin(time)*2;
-
-
-camera.position.y =
-Math.cos(time*0.8)*1.5;
+    requestAnimationFrame(animate);
 
 
 
-camera.rotation.y =
-Math.sin(time)*0.25;
+    // kamera yavaş hareket
 
 
-camera.rotation.z =
-Math.sin(time*0.7)*0.08;
+    camera.position.z -=0.01;
+
+
+    camera.rotation.y =
+    Math.sin(Date.now()*0.0003)
+    *
+    0.2;
+
+
+
+
+    renderer.render(
+
+        scene,
+        camera
+
+    );
+
+
 }
 
 
@@ -163,98 +269,36 @@ animate();
 
 
 
-// ekran boyutu
+
+
+
+// EKRAN BOYUTU
+
 
 window.addEventListener(
+
 "resize",
+
 ()=>{
 
+
 camera.aspect =
-window.innerWidth/window.innerHeight;
+window.innerWidth /
+window.innerHeight;
+
 
 camera.updateProjectionMatrix();
 
 
+
 renderer.setSize(
+
 window.innerWidth,
 window.innerHeight
+
 );
 
-
-});
-
-// GALAKSİ SPİRALİ
-
-const galaxyGeometry = new THREE.BufferGeometry();
-
-const galaxyPositions = [];
-
-const arms = 4;
-const count = 8000;
-
-
-for(let i = 0; i < count; i++){
-
-    const radius = Math.random() * 500;
-
-    const spin = radius * 0.02;
-
-    const arm =
-    i % arms *
-    (Math.PI * 2 / arms);
-
-
-    const angle =
-    arm + spin + Math.random()*0.5;
-
-
-    galaxyPositions.push(
-
-        Math.cos(angle) * radius,
-
-        (Math.random()-0.5) *
-        (radius*0.05),
-
-        Math.sin(angle) * radius - 1200
-
-    );
 
 }
 
-
-
-galaxyGeometry.setAttribute(
-    "position",
-    new THREE.Float32BufferAttribute(
-        galaxyPositions,
-        3
-    )
 );
-
-
-
-const galaxyMaterial =
-new THREE.PointsMaterial({
-
-    color:0xff9de2,
-
-    size:2,
-
-    transparent:true,
-
-    opacity:0.8,
-
-    blending:THREE.AdditiveBlending
-
-});
-
-
-
-const galaxy =
-new THREE.Points(
-    galaxyGeometry,
-    galaxyMaterial
-);
-
-
-scene.add(galaxy);
